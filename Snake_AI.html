@@ -27,25 +27,21 @@
             var reach=new Array(sz2); reach.fill(-1);
             var mdist=new Array(sz2); mdist.fill(sz2);
             var npos; queue=[dz], mdist[dz]=0;
-            while (queue.length!=0){
-                if (reach[posi=queue.shift()]<0){
-                    for(reach[posi]=1,t=0;npos=posi+actions[t],t<4;t++){
+            while (queue.length!=0)
+                if (reach[posi=queue.shift()]<0)
+                    for(reach[posi]=1,t=0;npos=posi+actions[t],t<4;t++)
                         if(!isLose(snake,npos,actions[t])&&reach[npos]<0)
                             queue.push(npos),mdist[npos]=mdist[posi]+1;
-                    }
-                }
-            }
             return mdist;
         }
         function findAction(snake,dz){
             var foodDist=bfs(snake,dz);
             var tailDist=bfs(snake,snake[snake.length-1]);
             var npos, tester = snake.concat();
-            for(t=0;npos=snake[0]+actions[t],t<4;t++){
+            for(t=0;npos=snake[0]+actions[t],t<4;t++)
                 if(!isLose(snake,npos,actions[t]))
                     foodd[t]=foodDist[npos],taild[t]=tailDist[npos];
                 else foodd[t]=sz2+1,taild[t]=sz2+1;
-            }
             tester.unshift(snake[0]+actions[AwayNear(taild,foodd)]);
             var testDist=bfs(tester,tester[tester.length-1]);
             if(testDist[tester[0]]<sz2) return actions[AwayNear(taild,foodd)]
