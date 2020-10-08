@@ -5,9 +5,11 @@
         var sz=20,sn=[sz*2+2,sz*2+1],dz=sz*2+3,fx=1,actions=[-1,-sz,1,sz];
         var n,t,sz2=sz*sz,queue,foodd=[0,0,0,0],taild=[0,0,0,0],str="",cnt=0;
         var pause=0,auto=1,ctx=document.getElementById("can").getContext("2d");
-        function draw(t,c){
+        function draw(t, c, lr, ud, w){
             ctx.fillStyle=c;
-            ctx.fillRect(t%sz*20+1,~~(t/sz)*20+1,18,18);
+            var d = 10-w/2, zlr=(lr+1)>>1, zud=(ud+1)>>1;
+            var alr=(lr>0?lr:-lr), aud=(ud>0?ud:-ud);
+            ctx.fillRect(t%sz*20+(1-2*zlr)*d,~~(t/sz)*20+(1-2*zud)*d,w+alr*d*2,w+aud*d*2);
         }
         function init(){
             str+=sn.length.toString()+" "+cnt.toString()+";\r\n";
@@ -24,24 +26,30 @@
             return temp.indexOf(Math.max.apply(null,temp),0);
         }
         function bfs(snake,dz){
-            var reach=new Array(sz2); reach.fill(-1);
-            var mdist=new Array(sz2); mdist.fill(sz2);
-            var npos; queue=[dz], mdist[dz]=0;
-            while (queue.length!=0)
-                if (reach[posi=queue.shift()]<0)
-                    for(reach[posi]=1,t=0;npos=posi+actions[t],t<4;t++)
+            var reach=new Array(sz2);reach.fill(-1);
+            var mdist=new Array(sz2);mdist.fill(sz2);
+            queue=[dz], mdist[dz]=0;
+            while (queue.length!=0){
+                posi = queue.shift()
+                if (reach[posi]<0)
+                    for(reach[posi]=1,t=0;t<4;t++){
+                        var npos=posi+actions[t];
                         if(!isLose(snake,npos,actions[t])&&reach[npos]<0)
-                            queue.push(npos),mdist[npos]=mdist[posi]+1;
+                            queue.push(npos), mdist[npos]=mdist[posi]+1;
+                    }
+            }
             return mdist;
         }
         function findAction(snake,dz){
             var foodDist=bfs(snake,dz);
             var tailDist=bfs(snake,snake[snake.length-1]);
-            var npos, tester = snake.concat();
-            for(t=0;npos=snake[0]+actions[t],t<4;t++)
+            for(t=0;t<4;t++){
+                var npos=snake[0]+actions[t];
                 if(!isLose(snake,npos,actions[t]))
-                    foodd[t]=foodDist[npos],taild[t]=tailDist[npos];
+                    foodd[t]=foodDist[npos], taild[t]=tailDist[npos];
                 else foodd[t]=sz2+1,taild[t]=sz2+1;
+            }
+            var tester = snake.concat();
             tester.unshift(snake[0]+actions[AwayNear(taild,foodd)]);
             var testDist=bfs(tester,tester[tester.length-1]);
             if(testDist[tester[0]]<sz2) return actions[AwayNear(taild,foodd)]
@@ -56,21 +64,17 @@
             if(!pause){
                 if(auto) fx=findAction(sn.concat(),dz);
                 sn.unshift(n=sn[0]+fx);
-                draw(n,"Gray");
+                draw(n,"Gray",fx%sz,~~(fx/sz),16);
                 if(isLose(sn,n,fx)||sn.length>sz2) init();
                 if(n==dz){
                     while(sn.indexOf(dz=~~(Math.random()*sz2))>=0);
-                    draw(dz,"Black");
-                }else draw(sn.pop(),"White");
+                    draw(dz,"Black",0,0,16);
+                }else draw(sn.pop(),"White",0,0,20);
                 cnt+=1;
             }
-            setTimeout(arguments.callee,20);
+            setTimeout(arguments.callee,1);
             document.getElementById("score").innerHTML=str+sn.length.toString();
         }();
         </script>
-        <div>
-            <p id="help">“Enter” change AI/player, “Space” change pause/continue, auto pase when snake dead</p>
-            <p id="score">None</p>
-        </div>
     </body>
 </html>
